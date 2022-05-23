@@ -1,0 +1,10 @@
+/build
+/lib
+/.idea
+.gdbinit.tmpl-riscv
+kernel
+kernel.asm
+kernel.ld
+LICENSE
+Makefile
+
