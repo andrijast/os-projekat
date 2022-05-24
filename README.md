@@ -14,11 +14,12 @@ major tasks
 - [ks]: Console (s)
 
 topics
+- memory allocator
 - thread
-- semafor
-- time sharing
-- async promena konteksta
-- preemption
+	- time sharing
+	- semaphore
+	- preemption (async promena konteksta)
+
 
 queue:
 - alokator memorije
