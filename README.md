@@ -1,19 +1,21 @@
-major tasks
-- (5) alokacija memorije
-	- [ks]: MemoryAllocator (s)
-	- [sp]: mem_alloc, mem_free
-- (10) upravljanje nitima
-	- [ks]: Thread, PCB, Scheduler (s)
-	- [sp]: thread_create, thread_exit, thread_dispatch
-- (5) semafori
-	- [ks]: Semaphore
-	- [sp]: sem_open, sem_close, sem_wait, sem_signal
-- (10) asinhrona promena konteksta
-	- [ks]: PeriodicThread
-	- [sp]: thread_sleep, getc, putc
-- [ks]: Console (s)
 
-topics
+tasks
+- (5) alokacija memorije
+	- (cs): MemoryAllocator (s)
+	- (sp): mem_alloc, mem_free
+- (10) upravljanje nitima
+	- (cs): Thread, PCB, Scheduler (s)
+	- (sp): thread_create, thread_exit, thread_dispatch
+- (5) semafori
+	- (cs): Semaphore
+	- (sp): sem_open, sem_close, sem_wait, sem_signal
+- (10) asinhrona promena konteksta
+	- (cs): PeriodicThread
+	- (sp): thread_sleep, getc, putc
+- (cs): Console (s)
+
+
+tasks
 - memory allocator
 - thread
 	- time sharing
