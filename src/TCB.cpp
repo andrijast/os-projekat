@@ -47,6 +47,12 @@ void TCB::dispatch() {
     contextSwitch(&old->context, &running->context);
 }
 
+void TCB::join(TCB* thread) {
+    while (!thread->finished()) {
+        TCB::dispatch();
+    }
+}
+
 void TCB::timerInterrupt() {
     timeSliceCounter++;
     if (timeSliceCounter >= running->timeSlice) {
@@ -131,4 +137,10 @@ void TCB::sc_thread_delete() {
     } else {
         Riscv::w_a0(-1);
     }
+}
+
+void TCB::sc_thread_join() {
+    TCB* tcb = (TCB*) Riscv::r_a(1);
+
+    TCB::join(tcb);
 }

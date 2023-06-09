@@ -18,6 +18,8 @@ class TCB {
     static void dispatch();
     static void timerInterrupt();
 
+    static void join(TCB* thread);
+
     enum State {
         CREATED, READY, RUNNING, // runnable
         SUSPENDED, SLEEPING, FINISHED, // blocked
@@ -62,6 +64,7 @@ class TCB {
     static void sc_thread_create();
     static void sc_thread_exit();
     static void sc_thread_dispatch();
+    static void sc_thread_join();
     static void sc_thread_build();
     static void sc_thread_start();
     static void sc_thread_delete();

@@ -12,6 +12,8 @@ public:
 
     int start();
 
+    void join();
+
     static void dispatch();
     static int sleep(time_t);
 
@@ -21,7 +23,8 @@ protected:
 
 private:
     thread_t handle;
-    static void wrapper(void* arg);
+    void (*body)(void*); void* args;
+    static void wrapper(void* args);
 };
 
 class Semaphore {
@@ -37,11 +40,15 @@ private:
 };
 
 class PeriodicThread : public Thread {
+public:
+    void terminate();
 protected:
     PeriodicThread(time_t period);
     virtual void periodicActivation() {}
 private:
+    time_t period;
     static void wrapper(void* arg);
+    bool terminated;
 };
 
 class Console {

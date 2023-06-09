@@ -57,6 +57,14 @@ void thread_dispatch() {
     __asm__ volatile("ecall");
 }
 
+void thread_join(thread_t handle) {
+
+    __asm__ volatile("mv a1, %0" : : "r" ((uint64)handle));
+    __asm__ volatile("mv a0, %0" : : "r" (0x14));
+
+    __asm__ volatile("ecall");
+}
+
 int thread_build(thread_t* handle_ptr, void(*body)(void*), void* args) {
     void* stack_space = mem_alloc(DEFAULT_STACK_SIZE);
     if (!stack_space) return -1;
@@ -65,7 +73,7 @@ int thread_build(thread_t* handle_ptr, void(*body)(void*), void* args) {
     __asm__ volatile("mv a3, %0" : : "r" ((uint64)args));
     __asm__ volatile("mv a2, %0" : : "r" ((uint64)body));
     __asm__ volatile("mv a1, %0" : : "r" ((uint64)handle_ptr));
-    __asm__ volatile("mv a0, %0" : : "r" (0x14));
+    __asm__ volatile("mv a0, %0" : : "r" (0x15));
 
     __asm__ volatile("ecall");
 
@@ -76,7 +84,7 @@ int thread_build(thread_t* handle_ptr, void(*body)(void*), void* args) {
 
 int thread_start(thread_t handle) {
     __asm__ volatile("mv a1, %0" : : "r" ((uint64)handle));
-    __asm__ volatile("mv a0, %0" : : "r" (0x15));
+    __asm__ volatile("mv a0, %0" : : "r" (0x16));
 
     __asm__ volatile("ecall");
 
@@ -87,7 +95,7 @@ int thread_start(thread_t handle) {
 
 int thread_delete(thread_t handle) {
     __asm__ volatile("mv a1, %0" : : "r" ((uint64)handle));
-    __asm__ volatile("mv a0, %0" : : "r" (0x16));
+    __asm__ volatile("mv a0, %0" : : "r" (0x17));
 
     __asm__ volatile("ecall");
 

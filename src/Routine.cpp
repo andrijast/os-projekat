@@ -63,9 +63,10 @@ void Riscv::croutine()
                 case 0x11: TCB::sc_thread_create(); break;
                 case 0x12: TCB::sc_thread_exit(); break; // context switch
                 case 0x13: TCB::sc_thread_dispatch(); break; // context switch
-                case 0x14: TCB::sc_thread_build(); break; // annex
-                case 0x15: TCB::sc_thread_start(); break; // annex
-                case 0x16: TCB::sc_thread_delete(); break; // annex
+                case 0x14: TCB::sc_thread_join(); break; // context switch
+                case 0x15: TCB::sc_thread_build(); break; // annex
+                case 0x16: TCB::sc_thread_start(); break; // annex
+                case 0x17: TCB::sc_thread_delete(); break; // annex
                 case 0x21: KSemaphore::sc_sem_open(); break;
                 case 0x22: KSemaphore::sc_sem_close(); break;
                 case 0x23: KSemaphore::sc_sem_wait(); break;

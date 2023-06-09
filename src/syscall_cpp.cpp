@@ -11,8 +11,10 @@ void operator delete(void* addr) {
 
 // ---------- THREAD ----------
 
-Thread::Thread(void (*body)(void*), void *args) {
+Thread::Thread(void (*body)(void*), void* args) {
     handle = nullptr;
+    this->body = body;
+    this->args = args;
     thread_create(&handle, body, args);
 }
 
@@ -35,6 +37,10 @@ int Thread::sleep(time_t in_periodes) {
     return time_sleep(in_periodes);
 }
 
+void Thread::join() {
+    thread_join(handle);
+}
+
 Thread::Thread() {
     handle = nullptr;
     thread_build(&handle, &Thread::wrapper, (void*)this);
@@ -52,16 +58,21 @@ struct PTargs {
 };
 
 PeriodicThread::PeriodicThread(time_t period)
-        : Thread(&PeriodicThread::wrapper, new PTargs({this, period})) {}
+        : Thread(&PeriodicThread::wrapper, new PTargs({this, period})),
+          period(period), terminated(false) {}
 
 void PeriodicThread::wrapper(void* args) {
     PeriodicThread* thread = (PeriodicThread*)((PTargs*)args)->thread;
     time_t period = ((PTargs*)args)->period;
 
-    while (true) {
+    while (!thread->terminated) {
         thread->periodicActivation();
         Thread::sleep(period);
     }
+}
+
+void PeriodicThread::terminate() {
+    terminated = true;
 }
 
 

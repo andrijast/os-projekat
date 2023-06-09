@@ -11,6 +11,7 @@ typedef _thread* thread_t;
 int thread_create(thread_t* handle_ptr, void(*body)(void*), void* args);
 int thread_exit();
 void thread_dispatch();
+void thread_join(thread_t handle);
 
 int thread_build(thread_t* handle_ptr, void(*body)(void*), void* args);
 int thread_start(thread_t handle);
