@@ -1,8 +1,8 @@
 
-# void PCB::contextSwitch(PCB::Context* oldContext, PCB::Context* newContext);
-.global _ZN3PCB13contextSwitchEPNS_7ContextES1_
-.type _ZN3PCB13contextSwitchEPNS_7ContextES1_, @function
-_ZN3PCB13contextSwitchEPNS_7ContextES1_:
+# void TCB::contextSwitch(TCB::Context* oldContext, TCB::Context* newContext);
+.global _ZN3TCB13contextSwitchEPNS_7ContextES1_
+.type _ZN3TCB13contextSwitchEPNS_7ContextES1_, @function
+_ZN3TCB13contextSwitchEPNS_7ContextES1_:
 
     sd sp, 0(a0)
     sd ra, 8(a0)

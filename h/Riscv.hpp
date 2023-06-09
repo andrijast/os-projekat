@@ -50,10 +50,20 @@ class Riscv {
     static void ms_sip(REG);
     static void mc_sip(REG);
 
+    // scause options
+    enum scauseOptions {
+        SCAUSE_BNT = (1ul << 63), // interrupt type, 1=external, 0=internal
+        TIMER_INT = 1,
+        CONSOLE_INT = 9,
+        SIGILL = 2,
+        SIGSEGV_R = 5,
+        SIGSEGV_W = 7,
+        USER_INT = 8,
+        SYSTEM_INT = 9,
+    };
 
     // bits in system registers
     enum SystemRegisterBits {
-        SCAUSE_BNT = (1ul << 63), // interrupt type, 1=external, 0=internal
         SSTATUS_SIE = (1ul << 1),  // system interrupt enable
         SSTATUS_SPIE = (1ul << 5), // system previous interrupt enable
         SSTATUS_SPP = (1ul << 8),  // previous mode, 1=system, 0=user
@@ -68,7 +78,7 @@ class Riscv {
     // friends
     friend class Kernel;
     friend class MemoryAllocator;
-    friend class PCB;
+    friend class TCB;
     friend class Scheduler;
     friend class KSemaphore;
     friend class KConsole;

@@ -6,24 +6,24 @@ KSemaphore::KSemaphore(int val)
     : val(val), blocked() {}
 
 KSemaphore::~KSemaphore() {
-    PCB* pcb;
-    while ((pcb = blocked.pop())) {
-        pcb->backFromClosedSem = true;
-        Scheduler::put(pcb);
+    TCB* tcb;
+    while ((tcb = blocked.pop())) {
+        tcb->backFromClosedSem = true;
+        Scheduler::put(tcb);
     }
 }
 
 void KSemaphore::block() {
-    PCB::running->setState(PCB::SUSPENDED);
-    blocked.push(PCB::running);
-    PCB::dispatch();
+    TCB::running->setState(TCB::SUSPENDED);
+    blocked.push(TCB::running);
+    TCB::dispatch();
 }
 
 void KSemaphore::unblock() {
-    PCB* pcb = blocked.pop();
-    if (pcb) {
-        pcb->backFromClosedSem = false;
-        Scheduler::put(pcb);
+    TCB* tcb = blocked.pop();
+    if (tcb) {
+        tcb->backFromClosedSem = false;
+        Scheduler::put(tcb);
     }
 }
 
@@ -52,7 +52,7 @@ void KSemaphore::operator delete(void* ptr) {
 void KSemaphore::sc_sem_wait() {
     KSemaphore* kSem = (KSemaphore*) Riscv::r_a(1);
     kSem->wait();
-    if (PCB::running->backFromClosedSem)
+    if (TCB::running->backFromClosedSem)
         Riscv::w_a0(-1);
     else
         Riscv::w_a0(0);

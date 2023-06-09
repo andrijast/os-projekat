@@ -1,19 +1,23 @@
 #include "../h/Riscv.hpp"
 #include "../h/MemoryAllocator.hpp"
 
-MemoryAllocator::Block* MemoryAllocator::head = nullptr;
-MemoryAllocator::Block* MemoryAllocator::unalloc = nullptr;
+MemoryAllocator::Chunk* MemoryAllocator::head = nullptr;
+MemoryAllocator::Chunk* MemoryAllocator::unalloc = nullptr;
+
+void MemoryAllocator::initialize() {
+
+    unalloc = (Chunk*)HEAP_START_ADDR;
+}
 
 void* MemoryAllocator::mem_alloc(size_t in_bytes) {
 
-    if (unalloc == nullptr)
-        unalloc = (Block*)HEAP_START_ADDR;
-
+    // block size 64 bytes
     size_t in_blocks = (in_bytes + sizeof(size_t) + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE;
 
-    for (Block* curr = head, *prev = nullptr; curr != nullptr; curr = (curr->next)) {
+    // look for space in freed chunks
+    for (Chunk* curr = head, *prev = nullptr; curr != nullptr; curr = (curr->next)) {
         if (curr->size >= in_blocks) {
-            void* ret = &(curr->next);
+            void* addr = &(curr->next);
             if (curr->size == in_blocks) {
                 if (prev)
                     prev->next = curr->next;
@@ -21,7 +25,7 @@ void* MemoryAllocator::mem_alloc(size_t in_bytes) {
                     head = curr->next;
             }
             else {
-                Block* remaining = (Block*)((uint8*)curr + in_blocks * MEM_BLOCK_SIZE);
+                Chunk* remaining = (Chunk*)((uint8*)curr + in_blocks * MEM_BLOCK_SIZE);
                 remaining->size = curr->size - in_blocks;
                 remaining->next = curr->next;
                 if (prev)
@@ -30,50 +34,55 @@ void* MemoryAllocator::mem_alloc(size_t in_bytes) {
                     head = remaining;
                 curr->size = in_blocks;
             }
-            return ret;
+            return addr;
         }
         prev = curr;
     }
 
+    // check for unallocated space
     if ((uint8*)unalloc + in_blocks * MEM_BLOCK_SIZE <= (uint8*) HEAP_END_ADDR) {
-        Block* fresh = (Block*) unalloc;
-        unalloc = (Block*)((uint8*)unalloc + in_blocks * MEM_BLOCK_SIZE);
+        Chunk* fresh = (Chunk*) unalloc;
+        unalloc = (Chunk*)((uint8*)unalloc + in_blocks * MEM_BLOCK_SIZE);
         fresh->size = in_blocks;
         return (void*)&(fresh->next);
     }
 
+    // no more free memory
     return nullptr;
 }
 
-uint64 MemoryAllocator::mem_free(void* ptr) {
+uint64 MemoryAllocator::mem_free(void* addr) {
 
-    Block* x = (Block*)((size_t*)ptr - 1);
-    x->next = head;
-    head = x;
+    Chunk* chunk = (Chunk*)((size_t*)addr - 1);
+    chunk->next = head;
+    head = chunk;
 
     return 0;
+}
+
+void MemoryAllocator::defragment() {
+    // TODO
 }
 
 void* MemoryAllocator::kmalloc(size_t size) {
     return MemoryAllocator::mem_alloc(size);
 }
 
-uint64 MemoryAllocator::kfree(void* ptr) {
-    return MemoryAllocator::mem_free(ptr);
+uint64 MemoryAllocator::kfree(void* addr) {
+    return MemoryAllocator::mem_free(addr);
 }
 
 
 // ----- SYSTEM CALLS -----
 
 void MemoryAllocator::sc_mem_alloc() {
-    size_t size = (size_t) Riscv::r_a(1);
-    size *= MEM_BLOCK_SIZE; // now in bytes
-    void* addr = mem_alloc(size);
+    size_t in_blocks = (size_t) Riscv::r_a(1);
+    void* addr = mem_alloc(in_blocks * MEM_BLOCK_SIZE);
     Riscv::w_a0((uint64)addr);
 }
 
 void MemoryAllocator::sc_mem_free() {
-    void* ptr = (void*) Riscv::r_a(1);
-    uint64 ret = mem_free(ptr);
-    Riscv::w_a0(ret);
+    void* addr = (void*) Riscv::r_a(1);
+    uint64 err = mem_free(addr);
+    Riscv::w_a0(err);
 }

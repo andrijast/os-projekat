@@ -1,5 +1,6 @@
 #include "../h/Riscv.hpp"
-#include "../h/PCB.hpp"
+#include "../h/MemoryAllocator.hpp"
+#include "../h/TCB.hpp"
 #include "../h/KConsole.hpp"
 #include "../h/Scheduler.hpp"
 #include "../h/syscall_c.hpp"
@@ -7,26 +8,27 @@
 
 Kernel::State Kernel::state = STARTED;
 
-PCB* Kernel::systemThread = nullptr;
-PCB* Kernel::consoleThread = nullptr;
-PCB* Kernel::userThread = nullptr;
+TCB* Kernel::systemThread = nullptr;
+TCB* Kernel::consoleThread = nullptr;
+TCB* Kernel::userThread = nullptr;
 
 void Kernel::initialize() {
     Riscv::w_stvec((uint64) Riscv::sroutine);
 
-    PCB::initialize();
+    MemoryAllocator::initialize();
+    TCB::initialize();
     KConsole::initialize();
 
-    systemThread = new PCB(0, 0, 0, 0);
+    systemThread = new TCB(0, 0, 0, 0);
     systemThread->privileged = true;
-    PCB::running = systemThread;
-    PCB::running->setState(PCB::RUNNING);
+    TCB::running = systemThread;
+    TCB::running->setState(TCB::RUNNING);
 
-    consoleThread = new PCB(KConsole::sendCharactersToConsole, nullptr);
+    consoleThread = new TCB(KConsole::sendCharactersToConsole, nullptr);
     consoleThread->privileged = true;
     consoleThread->start();
 
-    userThread = new PCB(userMainWrapper, nullptr);
+    userThread = new TCB(userMainWrapper, nullptr);
     userThread->privileged = false;
     userThread->start();
 
@@ -55,7 +57,7 @@ void Kernel::main() {
     terminate();
 }
 
-void userMain();
+extern void userMain();
 void Kernel::userMainWrapper(void* _) {
     userMain();
 }
@@ -71,16 +73,16 @@ void main() {
  * memory allocator: &(x->next)
  * KConsole::putCharacterOutput(c); console interrupt
  * KConsole: pendingPutc, pendingGetc
- * -fno-use-cxa-atexit
+ * -fno-use-cxa-atexit (static destructors not called)
  * mc_sip(SIP_SSIP); timer interrupt
  * back from sem return
  * system thread timeSlice = 0
  *
  *
- *      todo-s:
+ *      TODO-s:
  * friend classes, private vs public
  * minimize includes, kernel namespace
  * debugging prints
- * scause enum
+ * valid mem_free check
  *
 */

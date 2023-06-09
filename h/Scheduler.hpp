@@ -1,23 +1,23 @@
 #pragma once
 
-class PCB;
-class PCBQueue;
+class TCB;
+class TCBQueue;
 
 class Scheduler {
 
-    static PCBQueue ready;
-    static PCBQueue sleeping;
+    static TCBQueue ready;
+    static TCBQueue sleeping;
 
-    static void put(PCB* pcb);
-    static PCB* get();
+    static void put(TCB* tcb);
+    static TCB* get();
 
-    static void putToSleep(PCB* pcb);
+    static void putToSleep(TCB* tcb);
     static void checkAwake();
 
     // friends
     friend class Riscv;
     friend class Kernel;
-    friend class PCB;
+    friend class TCB;
     friend class KSemaphore;
 };
 

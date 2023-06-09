@@ -1,5 +1,5 @@
 #include "../h/MemoryAllocator.hpp"
-#include "../h/PCB.hpp"
+#include "../h/TCB.hpp"
 #include "../h/KSemaphore.hpp"
 #include "../h/Scheduler.hpp"
 #include "../h/KConsole.hpp"
@@ -7,7 +7,7 @@
 
 void Riscv::croutine()
 {
-    PCB::running->savedSP = r_sscratch();
+    TCB::running->savedSP = r_sscratch();
 
     uint64 scause = Riscv::r_scause();
     bool external = scause & SCAUSE_BNT;
@@ -15,14 +15,14 @@ void Riscv::croutine()
 
     // spoljasnji (asinhroni) prekidi
     if (external) {
-        if (scause == 1) { // prekid tajmera
+        if (scause == TIMER_INT) { // prekid tajmera
 
             uint64 volatile sepc = r_sepc();
             uint64 volatile sstatus = r_sstatus();
 
             totalTime++;
             Scheduler::checkAwake();
-            PCB::timerInterrupt();
+            TCB::timerInterrupt();
 
             mc_sip(SIP_SSIP);
             w_sstatus(sstatus);
@@ -30,7 +30,7 @@ void Riscv::croutine()
             setPrivilegeLevel();
 
         }
-        if (scause == 9) { // spoljasnji hardverski prekid - konzola
+        if (scause == CONSOLE_INT) { // spoljasnji hardverski prekid - konzola
 
             KConsole::getCharactersFromConsole();
 
@@ -41,13 +41,18 @@ void Riscv::croutine()
 
     // unutrasnji (sinhroni) prekidi
     else {
-        if (scause == 2 || scause == 5 || scause == 7) { // softverska greska
-            // 2 - ilegalna instrukcija
-            // 5 - nedozvoljena adresa citanja
-            // 7 - nedozvoljena adresa upisa
-            PCB::sc_thread_exit();
+        if ( // softverska greska
+            scause == SIGILL    // ilegalna instrukcija
+         || scause == SIGSEGV_R // nedozvoljena adresa citanja
+         || scause == SIGSEGV_W // nedozvoljena adresa upisa
+        ) {
+            TCB::sc_thread_exit();
         }
-        if (scause == 8 || scause == 9) { // ecall iz korisnickog (8), sistemskog (9) - ABI system call
+
+        if ( // ABI system call
+            scause == USER_INT // ecall iz korisnickog
+         || scause == SYSTEM_INT // ecall iz sistemskog
+        ) {
             uint64 volatile sepc = r_sepc() + 4;
             uint64 volatile sstatus = r_sstatus();
 
@@ -55,17 +60,17 @@ void Riscv::croutine()
             switch (op_code) {
                 case 0x01: MemoryAllocator::sc_mem_alloc(); break;
                 case 0x02: MemoryAllocator::sc_mem_free(); break;
-                case 0x11: PCB::sc_thread_create(); break;
-                case 0x12: PCB::sc_thread_exit(); break; // context switch
-                case 0x13: PCB::sc_thread_dispatch(); break; // context switch
-                case 0x14: PCB::sc_thread_build(); break; // annex
-                case 0x15: PCB::sc_thread_start(); break; // annex
-                case 0x16: PCB::sc_thread_delete(); break; // annex
+                case 0x11: TCB::sc_thread_create(); break;
+                case 0x12: TCB::sc_thread_exit(); break; // context switch
+                case 0x13: TCB::sc_thread_dispatch(); break; // context switch
+                case 0x14: TCB::sc_thread_build(); break; // annex
+                case 0x15: TCB::sc_thread_start(); break; // annex
+                case 0x16: TCB::sc_thread_delete(); break; // annex
                 case 0x21: KSemaphore::sc_sem_open(); break;
                 case 0x22: KSemaphore::sc_sem_close(); break;
                 case 0x23: KSemaphore::sc_sem_wait(); break;
                 case 0x24: KSemaphore::sc_sem_signal(); break;
-                case 0x31: PCB::sc_time_sleep(); break; // context switch
+                case 0x31: TCB::sc_time_sleep(); break; // context switch
                 case 0x41: KConsole::sc_getc(); break;
                 case 0x42: KConsole::sc_putc(); break;
                 case 0x43: KConsole::sc_getc_output(); break; // annex

@@ -2,27 +2,27 @@
 
 // ---------- MEMORY ----------
 
-void* operator new(size_t sz) {
-    return mem_alloc(sz);
+void* operator new(size_t in_bytes) {
+    return mem_alloc(in_bytes);
 }
-void operator delete(void* adr) {
-    mem_free(adr);
+void operator delete(void* addr) {
+    mem_free(addr);
 }
 
 // ---------- THREAD ----------
 
 Thread::Thread(void (*body)(void*), void *args) {
-    myHandle = nullptr;
-    thread_create(&myHandle, body, args);
+    handle = nullptr;
+    thread_create(&handle, body, args);
 }
 
 Thread::~Thread() {
-    thread_delete(myHandle);
+    thread_delete(handle);
 }
 
 int Thread::start() {
-    if (myHandle) {
-        return thread_start(myHandle);
+    if (handle) {
+        return thread_start(handle);
     }
     return -1;
 }
@@ -31,16 +31,16 @@ void Thread::dispatch() {
     thread_dispatch();
 }
 
-int Thread::sleep(time_t time) {
-    return time_sleep(time);
+int Thread::sleep(time_t in_periodes) {
+    return time_sleep(in_periodes);
 }
 
 Thread::Thread() {
-    myHandle = nullptr;
-    thread_build(&myHandle, &Thread::wrapper, (void*)this);
+    handle = nullptr;
+    thread_build(&handle, &Thread::wrapper, (void*)this);
 }
 
-void Thread::wrapper(void *thread) {
+void Thread::wrapper(void* thread) {
     ((Thread*)thread)->run();
 }
 
@@ -54,9 +54,9 @@ struct PTargs {
 PeriodicThread::PeriodicThread(time_t period)
         : Thread(&PeriodicThread::wrapper, new PTargs({this, period})) {}
 
-void PeriodicThread::wrapper(void* arg) {
-    PeriodicThread *thread = (PeriodicThread*)((PTargs*)arg)->thread;
-    time_t period = ((PTargs*)arg)->period;
+void PeriodicThread::wrapper(void* args) {
+    PeriodicThread* thread = (PeriodicThread*)((PTargs*)args)->thread;
+    time_t period = ((PTargs*)args)->period;
 
     while (true) {
         thread->periodicActivation();
@@ -68,22 +68,22 @@ void PeriodicThread::wrapper(void* arg) {
 // ---------- SEMAPHORE ----------
 
 Semaphore::Semaphore(unsigned init) {
-    int ret = sem_open(&myHandle, init);
-    if (ret != 0) myHandle = nullptr;
+    int err = sem_open(&handle, init);
+    if (err != 0) handle = nullptr;
 }
 
 Semaphore::~Semaphore() {
-    sem_close(myHandle);
+    sem_close(handle);
 }
 
 int Semaphore::wait() {
-    if (!myHandle) return -1;
-    return sem_wait(myHandle);
+    if (!handle) return -1;
+    return sem_wait(handle);
 }
 
 int Semaphore::signal() {
-    if (!myHandle) return -1;
-    return sem_signal(myHandle);
+    if (!handle) return -1;
+    return sem_signal(handle);
 }
 
 

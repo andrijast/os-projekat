@@ -1,135 +1,106 @@
-//#include "../test/Threads_C_API_test.hpp" // zadatak 2, niti C API i sinhrona promena konteksta
-//#include "../test/Threads_CPP_API_test.hpp" // zadatak 2., niti CPP API i sinhrona promena konteksta
+#include "printing.hpp"
 
-//#include "../test/ConsumerProducer_C_API_test.h" // zadatak 3., kompletan C API sa semaforima, sinhrona promena konteksta
-//#include "../test/ConsumerProducer_CPP_Sync_API_test.hpp" // zadatak 3., kompletan CPP API sa semaforima, sinhrona promena konteksta
+#define LEVEL_1_IMPLEMENTED 0
+#define LEVEL_2_IMPLEMENTED 1
+#define LEVEL_3_IMPLEMENTED 1
+#define LEVEL_4_IMPLEMENTED 1
 
-//#include "../test/ThreadSleep_C_API_test.hpp" // thread_sleep test C API
-#include "../test/ConsumerProducer_CPP_API_test.hpp" // zadatak 4. CPP API i asinhrona promena konteksta
+#if LEVEL_2_IMPLEMENTED == 1
+// TEST 1 (zadatak 2, niti C API i sinhrona promena konteksta)
+#include "../test/Threads_C_API_test.hpp"
+// TEST 2 (zadatak 2., niti CPP API i sinhrona promena konteksta)
+#include "../test/Threads_CPP_API_test.hpp"
+// TEST 7 (zadatak 2., testiranje da li se korisnicki kod izvrsava u korisnickom rezimu)
+#include "../test/System_Mode_test.hpp"
+#endif
 
+#if LEVEL_3_IMPLEMENTED == 1
+// TEST 3 (zadatak 3., kompletan C API sa semaforima, sinhrona promena konteksta)
+#include "../test/ConsumerProducer_C_API_test.hpp"
+// TEST 4 (zadatak 3., kompletan CPP API sa semaforima, sinhrona promena konteksta)
+#include "../test/ConsumerProducer_CPP_Sync_API_test.hpp"
+#endif
 
-#include "../h/syscall_cpp.hpp"
+#if LEVEL_4_IMPLEMENTED == 1
+// TEST 5 (zadatak 4., thread_sleep test C API)
+#include "../test/ThreadSleep_C_API_test.hpp"
+// TEST 6 (zadatak 4. CPP API i asinhrona promena konteksta)
+#include "../test/ConsumerProducer_CPP_API_test.hpp"
+#include "System_Mode_test.hpp"
 
-bool finished1 = false;
-bool finished2 = false;
-
-void printNums1(void* arg) {
-    int n = (uint64)arg;
-    for (int i = 1; i <= n; i++) {
-        printString("1: ");
-        printInt(i);
-        putc('\n');
-        if (i % 10) time_sleep(1);
-    }
-    finished1 = true;
-}
-
-void printNums2(void* arg) {
-    int n = (uint64)arg;
-    for (int i = 1; i <= n; i++) {
-        printString("2: ");
-        printInt(i);
-        putc('\n');
-        if (i % 5) time_sleep(2);
-    }
-    finished2 = true;
-}
-
-void mojTest() {
-    char *a = new char;
-    *a = 'a';
-    putc(*a);
-    putc('\n');
-
-    thread_t handle1;
-    int r1 = thread_create(&handle1, printNums1, (void*)20);
-    thread_t handle2;
-    int r2 = thread_create(&handle2, printNums2, (void*)20);
-
-    while (!(finished1 && finished2)) {
-        thread_dispatch();
-    }
-
-    putc(r1 + '0');
-    putc(r2 + '0');
-
-    putc('h');
-    putc('\n');
-
-}
-
-void memTest() {
-
-
-    putc(sizeof(uint8) + '0');
-    putc(sizeof(uint16) + '0');
-    putc(sizeof(uint32) + '0');
-    putc(sizeof(uint64) + '0');
-
-    int* a = new int;
-    *a = 3;
-    putc(*a + '0');
-
-    putc('\n');
-
-}
-
-thread_t thandle;
-sem_t shandle;
-bool finished = false;
-
-void threadSem(void* _) {
-
-    int x = sem_wait(shandle);
-    putc(x + '0');
-
-    finished = true;
-}
-
-void semTest() {
-
-    int x = sem_open(&shandle, 0);
-    putc(x + '0');
-
-    int r1 = thread_create(&thandle, threadSem, nullptr);
-    putc(r1 + '0');
-    putc('\n');
-
-    time_sleep(1);
-    sem_close(shandle);
-
-//    sem_signal(shandle);
-
-    while (!finished);
-
-
-    putc('\n');
-
-}
-
-void consoleTest() {
-
-    int a = getc() - '0'; getc();
-    int b = getc() - '0';
-
-    int c = a + b;
-
-    putc(c + '0');
-
-}
+#endif
 
 void userMain() {
-//    Threads_C_API_test(); // zadatak 2., niti C API i sinhrona promena konteksta
-//    Threads_CPP_API_test(); // zadatak 2., niti CPP API i sinhrona promena konteksta
-//
-//    producerConsumer_C_API(); // zadatak 3., kompletan C API sa semaforima, sinhrona promena konteksta
-//    producerConsumer_CPP_Sync_API(); // zadatak 3., kompletan CPP API sa semaforima, sinhrona promena konteksta
-//
-//    testSleeping(); // thread_sleep test C API
-    ConsumerProducerCPP::testConsumerProducer(); // zadatak 4. CPP API i asinhrona promena konteksta, kompletan test svega
+    printString("Unesite broj testa? [1-7]\n");
+    int test = getc() - '0';
+    getc(); // Enter posle broja
 
-//    mojTest();
-//    memTest();
-//    semTest();
-//    consoleTest();
+    if ((test >= 1 && test <= 2) || test == 7) {
+        if (LEVEL_2_IMPLEMENTED == 0) {
+            printString("Nije navedeno da je zadatak 2 implementiran\n");
+            return;
+        }
+    }
+
+    if (test >= 3 && test <= 4) {
+        if (LEVEL_3_IMPLEMENTED == 0) {
+            printString("Nije navedeno da je zadatak 3 implementiran\n");
+            return;
+        }
+    }
+
+    if (test >= 5 && test <= 6) {
+        if (LEVEL_4_IMPLEMENTED == 0) {
+            printString("Nije navedeno da je zadatak 4 implementiran\n");
+            return;
+        }
+    }
+
+    switch (test) {
+        case 1:
+#if LEVEL_2_IMPLEMENTED == 1
+            Threads_C_API_test();
+            printString("TEST 1 (zadatak 2, niti C API i sinhrona promena konteksta)\n");
+#endif
+            break;
+        case 2:
+#if LEVEL_2_IMPLEMENTED == 1
+            Threads_CPP_API_test();
+            printString("TEST 2 (zadatak 2., niti CPP API i sinhrona promena konteksta)\n");
+#endif
+            break;
+        case 3:
+#if LEVEL_3_IMPLEMENTED == 1
+            producerConsumer_C_API();
+            printString("TEST 3 (zadatak 3., kompletan C API sa semaforima, sinhrona promena konteksta)\n");
+#endif
+            break;
+        case 4:
+#if LEVEL_3_IMPLEMENTED == 1
+            producerConsumer_CPP_Sync_API();
+            printString("TEST 4 (zadatak 3., kompletan CPP API sa semaforima, sinhrona promena konteksta)\n");
+#endif
+            break;
+        case 5:
+#if LEVEL_4_IMPLEMENTED == 1
+            testSleeping();
+            printString("TEST 5 (zadatak 4., thread_sleep test C API)\n");
+#endif
+            break;
+        case 6:
+#if LEVEL_4_IMPLEMENTED == 1
+            testConsumerProducer();
+            printString("TEST 6 (zadatak 4. CPP API i asinhrona promena konteksta)\n");
+#endif
+            break;
+        case 7:
+#if LEVEL_2_IMPLEMENTED == 1
+            System_Mode_test();
+            printString("Test se nije uspesno zavrsio\n");
+            printString("TEST 7 (zadatak 2., testiranje da li se korisnicki kod izvrsava u korisnickom rezimu)\n");
+#endif
+            break;
+        default:
+            printString("Niste uneli odgovarajuci broj za test\n");
+    }
 }

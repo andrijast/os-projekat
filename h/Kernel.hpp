@@ -13,9 +13,9 @@ private:
     };
     static State state;
 
-    static PCB* systemThread;
-    static PCB* consoleThread;
-    static PCB* userThread;
+    static TCB* systemThread;
+    static TCB* consoleThread;
+    static TCB* userThread;
 
     static void userMainWrapper(void* p);
     static void initialize();

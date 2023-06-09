@@ -2,12 +2,12 @@
 
 #include "syscall_c.hpp"
 
-void* operator new(size_t);
-void operator delete(void*);
+void* operator new(size_t in_bytes);
+void operator delete(void* addr);
 
 class Thread {
 public:
-    Thread (void (*body)(void*), void* arg);
+    Thread (void (*body)(void*), void* args);
     virtual ~Thread();
 
     int start();
@@ -20,7 +20,7 @@ protected:
     virtual void run() {}
 
 private:
-    thread_t myHandle;
+    thread_t handle;
     static void wrapper(void* arg);
 };
 
@@ -33,7 +33,7 @@ public:
     int signal();
 
 private:
-    sem_t myHandle;
+    sem_t handle;
 };
 
 class PeriodicThread : public Thread {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PCBQueue.hpp"
-//class PCBQueue;
+#include "TCBQueue.hpp"
+//class TCBQueue;
 
 class KSemaphore {
 
@@ -9,7 +9,7 @@ class KSemaphore {
     ~KSemaphore();
 
     int val;
-    PCBQueue blocked;
+    TCBQueue blocked;
 
     void block();
     void unblock();

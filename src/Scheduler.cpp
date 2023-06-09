@@ -1,23 +1,23 @@
 #include "../h/Riscv.hpp"
 #include "../h/MemoryAllocator.hpp"
-#include "../h/PCBQueue.hpp"
+#include "../h/TCBQueue.hpp"
 #include "../h/Scheduler.hpp"
 
-PCBQueue Scheduler::ready;
-PCBQueue Scheduler::sleeping;
+TCBQueue Scheduler::ready;
+TCBQueue Scheduler::sleeping;
 
-void Scheduler::put(PCB *pcb) {
-    pcb->setState(PCB::READY);
-    ready.push(pcb);
+void Scheduler::put(TCB *tcb) {
+    tcb->setState(TCB::READY);
+    ready.push(tcb);
 }
 
-PCB* Scheduler::get() {
+TCB* Scheduler::get() {
     return ready.pop();
 }
 
-void Scheduler::putToSleep(PCB* pcb) {
-    pcb->setState(PCB::SLEEPING);
-    sleeping.insert(pcb);
+void Scheduler::putToSleep(TCB* tcb) {
+    tcb->setState(TCB::SLEEPING);
+    sleeping.insert(tcb);
 }
 
 void Scheduler::checkAwake() {
